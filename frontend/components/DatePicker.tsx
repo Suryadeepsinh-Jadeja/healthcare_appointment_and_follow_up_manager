@@ -43,13 +43,13 @@ export function DatePicker({
   }
 
   return (
-    <div className="w-full max-w-xl rounded-md border border-slate-300 p-4 text-sm">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="w-full max-w-[22rem] rounded-md border border-slate-300 p-2.5 text-sm">
+      <div className="mb-2 flex items-center justify-between">
         <button
           type="button"
           aria-label="Previous month"
           onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1))}
-          className="rounded px-2 py-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          className="rounded px-1.5 py-0.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
         >
           ‹
         </button>
@@ -60,19 +60,19 @@ export function DatePicker({
           type="button"
           aria-label="Next month"
           onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1))}
-          className="rounded px-2 py-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          className="rounded px-1.5 py-0.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
         >
           ›
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-2 text-center text-xs text-slate-400">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs text-slate-400">
         {WEEKDAY_LABELS.map((label, i) => (
           <div key={i}>{label}</div>
         ))}
       </div>
 
-      <div className="mt-2 grid grid-cols-7 gap-2">
+      <div className="mt-1 grid grid-cols-7 gap-1">
         {cells.map((date, i) => {
           if (!date) return <div key={i} />;
           const key = toDateKey(date);
@@ -86,7 +86,7 @@ export function DatePicker({
               disabled={disabled}
               onClick={() => onChange(key)}
               className={cx(
-                "rounded-md py-2.5 text-sm transition",
+                "rounded-md py-1 text-sm transition",
                 isSelected ? "bg-slate-900 text-white" : "hover:bg-slate-100",
                 disabled && "cursor-not-allowed text-slate-300 hover:bg-transparent",
               )}
