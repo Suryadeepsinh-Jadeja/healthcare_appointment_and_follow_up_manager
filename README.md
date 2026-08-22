@@ -39,7 +39,7 @@ Notes on the live deployment:
 - **Backend**: Node.js (Express) + TypeScript, standalone API service
 - **Database**: PostgreSQL + Prisma ORM
 - **Auth**: JWT (access + refresh), bcrypt, role-based middleware
-- **LLM**: Google Gemini (`gemini-2.5-flash-lite` by default), server-side only
+- **LLM**: Google Gemini (`gemini-3.5-flash-lite` by default), server-side only
 - **Email**: Resend
 - **Calendar**: Google Calendar API v3 (OAuth 2.0, authorization-code flow)
 - **Background jobs**: BullMQ + Redis
@@ -107,7 +107,7 @@ asserts exactly one succeeds — the double-booking-prevention mechanism describ
 | `JWT_ACCESS_TTL` / `JWT_REFRESH_TTL` | Token lifetimes (defaults: `15m`, `7d`) |
 | `REDIS_URL` | Redis connection string (use `rediss://` for TLS-required providers like Upstash) |
 | `GEMINI_API_KEY` | From [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
-| `GEMINI_MODEL` | Defaults to `gemini-2.5-flash-lite` |
+| `GEMINI_MODEL` | Defaults to `gemini-3.5-flash-lite` |
 | `RESEND_API_KEY` | From [resend.com](https://resend.com) |
 | `EMAIL_FROM` | Sender address, e.g. `Clinic <onboarding@resend.dev>` |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | From a Google Cloud OAuth client (see below) |
@@ -197,6 +197,7 @@ GET    /doctors/:id/slots?date=      (PATIENT)
 
 POST   /appointments/hold            (PATIENT)
 POST   /appointments/:id/confirm     (PATIENT)
+PATCH  /appointments/:id/reschedule  (PATIENT)
 DELETE /appointments/:id             (PATIENT)
 GET    /appointments/me              (PATIENT)
 

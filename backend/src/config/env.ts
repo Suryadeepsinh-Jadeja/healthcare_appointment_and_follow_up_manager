@@ -22,7 +22,7 @@ export const env = {
   redisUrl: required("REDIS_URL"),
 
   geminiApiKey: process.env.GEMINI_API_KEY ?? "",
-  geminiModel: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+  geminiModel: process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite",
 
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   emailFrom: process.env.EMAIL_FROM ?? "Clinic <onboarding@resend.dev>",
