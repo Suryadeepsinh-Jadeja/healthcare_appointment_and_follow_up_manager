@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  name         String
+  phone        String?
+  createdAt    DateTime @default(now())
+
+  patientProfile PatientProfile?
+  doctorProfile  DoctorProfile?
+  googleAuth     GoogleAuth?
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+model DoctorProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  specialisation  String
+  slotDurationMin Int      @default(20)
+  workingHours    Json
+
+  leaves       DoctorLeave[]
+  appointments Appointment[]
+}
+
+model DoctorLeave {
+  id        String        @id @default(uuid())
+  doctorId  String
+  doctor    DoctorProfile @relation(fields: [doctorId], references: [id])
+  date      DateTime
+  reason    String?
+  createdAt DateTime      @default(now())
+
+  @@index([doctorId, date])
+}
+
+model PatientProfile {
+  id     String    @id @default(uuid())
+  userId String    @unique
+  user   User      @relation(fields: [userId], references: [id])
+  dob    DateTime?
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id     String @id @default(uuid())
+
+  doctorId  String
+  doctor    DoctorProfile  @relation(fields: [doctorId], references: [id])
+  patientId String
+  patient   PatientProfile @relation(fields: [patientId], references: [id])
+
+  slotStart DateTime
+  slotEnd   DateTime
+  status    AppointmentStatus @default(HELD)
+
+  holdExpiresAt DateTime?
+
+  symptomForm      Json?
+  preVisitSummary  Json?
+  postVisitNotes   String?
+  postVisitSummary Json?
+  prescription     Json?
+
+  googleEventIdPatient String?
+  googleEventIdDoctor  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, slotStart])
+}
+
+enum AppointmentStatus {
+  HELD
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model GoogleAuth {
+  id           String    @id @default(uuid())
+  userId       String    @unique
+  user         User      @relation(fields: [userId], references: [id])
+  refreshToken String
+  accessToken  String?
+  expiresAt    DateTime?
+}
+
+model NotificationLog {
+  id            String   @id @default(uuid())
+  appointmentId String?
+  type          String
+  channel       String
+  status        String
+  attempts      Int      @default(0)
+  lastError     String?
+  createdAt     DateTime @default(now())
+}
