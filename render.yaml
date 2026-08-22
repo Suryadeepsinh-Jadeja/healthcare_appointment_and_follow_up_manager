@@ -11,47 +11,11 @@ services:
         value: production
       - key: PORT
         value: "4000"
-      - key: DATABASE_URL
-        sync: false
-      - key: JWT_ACCESS_SECRET
-        sync: false
-      - key: JWT_REFRESH_SECRET
-        sync: false
-      - key: JWT_ACCESS_TTL
-        value: 15m
-      - key: JWT_REFRESH_TTL
-        value: 7d
-      - key: REDIS_URL
-        sync: false
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: GEMINI_MODEL
-        value: gemini-2.5-flash-lite
-      - key: RESEND_API_KEY
-        sync: false
-      - key: EMAIL_FROM
-        sync: false
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-      - key: GOOGLE_REDIRECT_URI
-        sync: false
-      - key: GOOGLE_TOKEN_ENCRYPTION_KEY
-        sync: false
-      - key: FRONTEND_URL
-        sync: false
-
-  - type: worker
-    name: healthcare-worker
-    runtime: node
-    plan: free
-    rootDir: backend
-    buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: npm run worker:start
-    envVars:
-      - key: NODE_ENV
-        value: production
+      # Runs the BullMQ workers in the same process as the API — Render's
+      # free tier has no separate background-worker resource type. Set to
+      # "false" if this is ever moved to a plan/platform with one.
+      - key: RUN_WORKER_INLINE
+        value: "true"
       - key: DATABASE_URL
         sync: false
       - key: JWT_ACCESS_SECRET

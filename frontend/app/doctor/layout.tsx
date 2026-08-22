@@ -1,7 +1,10 @@
 import { RequireRole } from "../../components/RequireRole";
 import { PortalNav } from "../../components/PortalNav";
 
-const LINKS = [{ href: "/doctor/appointments", label: "Appointments" }];
+const LINKS = [
+  { href: "/doctor/appointments", label: "Appointments" },
+  { href: "/settings", label: "Settings" },
+];
 
 export default function DoctorLayout({ children }: { children: React.ReactNode }) {
   return (

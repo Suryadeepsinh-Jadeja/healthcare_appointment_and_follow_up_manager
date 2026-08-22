@@ -1,11 +1,17 @@
 import { Router } from "express";
 import { env } from "../../config/env";
+import { prisma } from "../../lib/prisma";
 import { requireAuth } from "../../middleware/auth.middleware";
 import { signOAuthState, verifyOAuthState } from "../../lib/jwt";
 import { createOAuthClient, GOOGLE_CALENDAR_SCOPE } from "./google.client";
 import { saveGoogleAuthFromCode } from "./calendar.service";
 
 export const googleRouter = Router();
+
+googleRouter.get("/status", requireAuth, async (req, res) => {
+  const googleAuth = await prisma.googleAuth.findUnique({ where: { userId: req.user!.id } });
+  res.json({ connected: Boolean(googleAuth) });
+});
 
 googleRouter.get("/auth-url", requireAuth, (req, res) => {
   const oauthClient = createOAuthClient();

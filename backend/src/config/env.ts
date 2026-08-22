@@ -33,4 +33,6 @@ export const env = {
   googleTokenEncryptionKey: process.env.GOOGLE_TOKEN_ENCRYPTION_KEY ?? "",
 
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
+
+  runWorkerInline: process.env.RUN_WORKER_INLINE !== "false",
 };

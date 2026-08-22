@@ -4,6 +4,7 @@ import { PortalNav } from "../../components/PortalNav";
 const LINKS = [
   { href: "/patient/doctors", label: "Find a doctor" },
   { href: "/patient/appointments", label: "My appointments" },
+  { href: "/settings", label: "Settings" },
 ];
 
 export default function PatientLayout({ children }: { children: React.ReactNode }) {
