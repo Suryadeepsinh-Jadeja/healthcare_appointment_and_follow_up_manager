@@ -5,7 +5,9 @@ import {
   cancellationEmail,
   doctorBookingConfirmationEmail,
   doctorCancellationEmail,
+  doctorRescheduledEmail,
   medicationReminderEmail,
+  patientRescheduledEmail,
 } from "../src/modules/notifications/email/templates";
 
 const ctx = {
@@ -46,6 +48,18 @@ describe("email templates", () => {
     const email = doctorCancellationEmail({ ...ctx, reason: "doctor on leave" });
     expect(email.html).toContain("Asha Kulkarni");
     expect(email.html).toContain("doctor on leave");
+  });
+
+  it("renders a patient reschedule email with both the old and new time", () => {
+    const email = patientRescheduledEmail({ ...ctx, previousSlotStart: new Date("2027-02-20T09:00:00.000Z") });
+    expect(email.subject).toContain("rescheduled");
+    expect(email.html).toContain("Dr. Arjun Mehta");
+  });
+
+  it("renders a doctor reschedule email with both the old and new time", () => {
+    const email = doctorRescheduledEmail({ ...ctx, previousSlotStart: new Date("2027-02-20T09:00:00.000Z") });
+    expect(email.subject).toContain("Asha Kulkarni");
+    expect(email.html).toContain("Asha Kulkarni");
   });
 
   it("renders a medication reminder email", () => {

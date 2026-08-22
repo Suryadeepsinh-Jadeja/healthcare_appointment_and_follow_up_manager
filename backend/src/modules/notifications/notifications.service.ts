@@ -143,6 +143,75 @@ export async function enqueueCancellationNotifications(snapshot: CancellationSna
   }
 }
 
+/** Removes a still-pending REMINDER email (queued job + log row) so a reschedule doesn't leave a stale one announcing the old time. */
+async function cancelPendingReminder(appointmentId: string): Promise<void> {
+  const jobId = `EMAIL__REMINDER__${appointmentId}`;
+  try {
+    const job = await notificationsQueue.getJob(jobId);
+    if (job) {
+      await job.remove();
+    }
+  } catch (error) {
+    console.error(`Failed to remove stale reminder job for ${appointmentId}:`, error);
+  }
+  await prisma.notificationLog.deleteMany({
+    where: { appointmentId, type: "REMINDER", channel: "EMAIL", status: "PENDING" },
+  });
+}
+
+export interface RescheduleSnapshot {
+  appointmentId: string;
+  previousSlotStart: Date;
+  slotStart: Date;
+  slotEnd: Date;
+  patientEmail: string;
+  patientName: string;
+  doctorEmail: string;
+  doctorName: string;
+  specialisation: string;
+  doctorUserId: string;
+  patientUserId: string;
+  googleEventIdPatient: string | null;
+  googleEventIdDoctor: string | null;
+}
+
+export async function enqueueRescheduleNotifications(snapshot: RescheduleSnapshot): Promise<void> {
+  const shared = {
+    appointmentId: snapshot.appointmentId,
+    patientEmail: snapshot.patientEmail,
+    patientName: snapshot.patientName,
+    doctorEmail: snapshot.doctorEmail,
+    doctorName: snapshot.doctorName,
+    specialisation: snapshot.specialisation,
+    slotStart: snapshot.slotStart.toISOString(),
+    previousSlotStart: snapshot.previousSlotStart.toISOString(),
+  };
+
+  await enqueueSingleShotNotification({ ...shared, type: "RESCHEDULE", channel: "EMAIL" });
+
+  if (snapshot.googleEventIdPatient || snapshot.googleEventIdDoctor) {
+    await enqueueSingleShotNotification({
+      appointmentId: snapshot.appointmentId,
+      type: "RESCHEDULE",
+      channel: "CALENDAR",
+      doctorUserId: snapshot.doctorUserId,
+      patientUserId: snapshot.patientUserId,
+      patientName: snapshot.patientName,
+      doctorName: snapshot.doctorName,
+      slotStart: snapshot.slotStart.toISOString(),
+      slotEnd: snapshot.slotEnd.toISOString(),
+      googleEventIdPatient: snapshot.googleEventIdPatient,
+      googleEventIdDoctor: snapshot.googleEventIdDoctor,
+    });
+  }
+
+  await cancelPendingReminder(snapshot.appointmentId);
+  const reminderDelay = snapshot.slotStart.getTime() - REMINDER_LEAD_TIME_MS - Date.now();
+  if (reminderDelay > 0) {
+    await enqueueSingleShotNotification({ ...shared, type: "REMINDER", channel: "EMAIL" }, reminderDelay);
+  }
+}
+
 export interface MedicationReminderInput {
   appointmentId: string;
   patientEmail: string;

@@ -6,6 +6,7 @@ import { generatePreVisitSummary } from "../llm/preVisitSummary";
 import {
   enqueueBookingConfirmationNotifications,
   enqueueCancellationNotifications,
+  enqueueRescheduleNotifications,
 } from "../notifications/notifications.service";
 import { computeAvailableSlots, WorkingHours } from "./slots";
 
@@ -123,6 +124,59 @@ export async function confirmAppointment(userId: string, appointmentId: string, 
   }
 
   return confirmed;
+}
+
+export async function rescheduleAppointment(userId: string, appointmentId: string, slotStartInput: string) {
+  const appointment = await getOwnedAppointmentOrThrow(userId, appointmentId);
+
+  if (appointment.status !== "CONFIRMED") {
+    throw new HttpError("Only a confirmed appointment can be rescheduled", 409);
+  }
+
+  const previousSlotStart = appointment.slotStart;
+  const newSlotStart = new Date(slotStartInput);
+  const doctor = await assertSlotIsBookable(appointment.doctorId, newSlotStart);
+  const newSlotEnd = new Date(newSlotStart.getTime() + doctor.slotDurationMin * 60 * 1000);
+
+  let rescheduled;
+  try {
+    rescheduled = await prisma.appointment.update({
+      where: { id: appointment.id },
+      data: { slotStart: newSlotStart, slotEnd: newSlotEnd },
+      include: {
+        doctor: { include: { user: { select: { id: true, email: true, name: true } } } },
+        patient: { include: { user: { select: { id: true, email: true, name: true } } } },
+      },
+    });
+  } catch (error) {
+    // Same @@unique([doctorId, slotStart]) constraint that guards fresh bookings also guards a move into a taken slot.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new HttpError("This slot was just taken — please pick another", 409);
+    }
+    throw error;
+  }
+
+  try {
+    await enqueueRescheduleNotifications({
+      appointmentId: rescheduled.id,
+      previousSlotStart,
+      slotStart: rescheduled.slotStart,
+      slotEnd: rescheduled.slotEnd,
+      patientEmail: rescheduled.patient.user.email,
+      patientName: rescheduled.patient.user.name,
+      doctorEmail: rescheduled.doctor.user.email,
+      doctorName: rescheduled.doctor.user.name,
+      specialisation: rescheduled.doctor.specialisation,
+      doctorUserId: rescheduled.doctor.user.id,
+      patientUserId: rescheduled.patient.user.id,
+      googleEventIdPatient: rescheduled.googleEventIdPatient,
+      googleEventIdDoctor: rescheduled.googleEventIdDoctor,
+    });
+  } catch (error) {
+    console.error(`Failed to enqueue reschedule notifications for ${rescheduled.id}:`, error);
+  }
+
+  return rescheduled;
 }
 
 export async function cancelAppointment(userId: string, appointmentId: string) {

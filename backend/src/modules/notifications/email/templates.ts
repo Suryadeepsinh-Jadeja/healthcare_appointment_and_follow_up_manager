@@ -102,6 +102,36 @@ export function doctorCancellationEmail(
   };
 }
 
+export function patientRescheduledEmail(
+  ctx: AppointmentEmailContext & { previousSlotStart: Date },
+): RenderedEmail {
+  return {
+    subject: `Your appointment with ${ctx.doctorName} was rescheduled`,
+    html: wrapper(
+      "Appointment rescheduled",
+      `<p>Hi ${ctx.patientName},</p>
+       <p>Your appointment with <strong>${ctx.doctorName}</strong> (${ctx.specialisation}) has moved from
+       <strong>${formatDateTime(ctx.previousSlotStart)}</strong> to
+       <strong>${formatDateTime(ctx.slotStart)}</strong>.</p>`,
+    ),
+  };
+}
+
+export function doctorRescheduledEmail(
+  ctx: AppointmentEmailContext & { previousSlotStart: Date },
+): RenderedEmail {
+  return {
+    subject: `Appointment with ${ctx.patientName} was rescheduled`,
+    html: wrapper(
+      "Appointment rescheduled",
+      `<p>Hi Dr. ${ctx.doctorName},</p>
+       <p>The appointment with <strong>${ctx.patientName}</strong> has moved from
+       <strong>${formatDateTime(ctx.previousSlotStart)}</strong> to
+       <strong>${formatDateTime(ctx.slotStart)}</strong>.</p>`,
+    ),
+  };
+}
+
 export function medicationReminderEmail(ctx: {
   patientName: string;
   drug: string;

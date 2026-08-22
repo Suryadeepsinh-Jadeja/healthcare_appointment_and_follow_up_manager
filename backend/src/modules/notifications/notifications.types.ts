@@ -1,4 +1,4 @@
-export type NotificationType = "BOOKING_CONFIRM" | "REMINDER" | "CANCELLATION" | "MED_REMINDER";
+export type NotificationType = "BOOKING_CONFIRM" | "REMINDER" | "CANCELLATION" | "RESCHEDULE" | "MED_REMINDER";
 export type NotificationChannel = "EMAIL" | "CALENDAR";
 
 /**
@@ -13,7 +13,7 @@ export interface NotificationJobData {
   type: NotificationType;
   channel: NotificationChannel;
 
-  // EMAIL: BOOKING_CONFIRM / REMINDER / CANCELLATION
+  // EMAIL: BOOKING_CONFIRM / REMINDER / CANCELLATION / RESCHEDULE
   patientEmail?: string;
   patientName?: string;
   doctorEmail?: string;
@@ -22,18 +22,19 @@ export interface NotificationJobData {
   slotStart?: string; // ISO
   reason?: string; // CANCELLATION only
   rebookUrl?: string; // CANCELLATION only
+  previousSlotStart?: string; // ISO — RESCHEDULE only
 
   // EMAIL: MED_REMINDER
   drug?: string;
   dose?: string;
   timing?: string;
 
-  // CALENDAR: BOOKING_CONFIRM
+  // CALENDAR: BOOKING_CONFIRM / RESCHEDULE
   doctorUserId?: string;
   patientUserId?: string;
   slotEnd?: string; // ISO
 
-  // CALENDAR: CANCELLATION
+  // CALENDAR: CANCELLATION / RESCHEDULE
   googleEventIdDoctor?: string | null;
   googleEventIdPatient?: string | null;
 }

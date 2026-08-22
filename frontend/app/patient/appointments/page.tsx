@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { Badge, Button, Card, ErrorText } from "../../../components/ui";
 import { apiDelete, apiGet, ApiError } from "../../../lib/api";
 import { Appointment } from "../../../lib/types";
+import { RescheduleForm } from "./RescheduleForm";
 
 export default function MyAppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [reschedulingId, setReschedulingId] = useState<string | null>(null);
 
   function load() {
     setLoading(true);
@@ -94,14 +96,35 @@ export default function MyAppointmentsPage() {
               )}
 
               {(appointment.status === "HELD" || appointment.status === "CONFIRMED") && (
-                <Button
-                  variant="danger"
-                  className="mt-3"
-                  disabled={cancellingId === appointment.id}
-                  onClick={() => handleCancel(appointment.id)}
-                >
-                  {cancellingId === appointment.id ? "Cancelling..." : "Cancel"}
-                </Button>
+                <div className="mt-3 flex gap-3">
+                  {appointment.status === "CONFIRMED" && (
+                    <Button
+                      variant="secondary"
+                      disabled={reschedulingId === appointment.id}
+                      onClick={() => setReschedulingId(reschedulingId === appointment.id ? null : appointment.id)}
+                    >
+                      {reschedulingId === appointment.id ? "Close" : "Reschedule"}
+                    </Button>
+                  )}
+                  <Button
+                    variant="danger"
+                    disabled={cancellingId === appointment.id}
+                    onClick={() => handleCancel(appointment.id)}
+                  >
+                    {cancellingId === appointment.id ? "Cancelling..." : "Cancel"}
+                  </Button>
+                </div>
+              )}
+
+              {reschedulingId === appointment.id && (
+                <RescheduleForm
+                  appointment={appointment}
+                  onDone={() => {
+                    setReschedulingId(null);
+                    load();
+                  }}
+                  onError={(message) => setError(message)}
+                />
               )}
             </Card>
           ))}

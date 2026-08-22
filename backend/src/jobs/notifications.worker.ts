@@ -8,12 +8,15 @@ import {
   doctorAppointmentReminderEmail,
   doctorBookingConfirmationEmail,
   doctorCancellationEmail,
+  doctorRescheduledEmail,
   medicationReminderEmail,
+  patientRescheduledEmail,
   RenderedEmail,
 } from "../modules/notifications/email/templates";
 import {
   createCalendarEventForUser,
   deleteCalendarEventForUser,
+  updateCalendarEventForUser,
 } from "../modules/calendar/calendar.service";
 import { NotificationJobData } from "../modules/notifications/notifications.types";
 import { redisConnection } from "./connection";
@@ -70,6 +73,17 @@ async function sendNotificationEmail(data: NotificationJobData): Promise<void> {
       );
       return;
     }
+    case "RESCHEDULE": {
+      const ctx = {
+        patientName: data.patientName!,
+        doctorName: data.doctorName!,
+        specialisation: data.specialisation!,
+        slotStart: new Date(data.slotStart!),
+        previousSlotStart: new Date(data.previousSlotStart!),
+      };
+      await sendPair(data.patientEmail!, patientRescheduledEmail(ctx), data.doctorEmail, doctorRescheduledEmail(ctx));
+      return;
+    }
     case "MED_REMINDER": {
       const email = medicationReminderEmail({
         patientName: data.patientName!,
@@ -108,6 +122,24 @@ async function syncCalendarEvent(data: NotificationJobData): Promise<void> {
         : Promise.resolve(),
       data.doctorUserId && data.googleEventIdDoctor
         ? deleteCalendarEventForUser(data.doctorUserId, data.googleEventIdDoctor)
+        : Promise.resolve(),
+    ]);
+    return;
+  }
+
+  if (data.type === "RESCHEDULE") {
+    const start = new Date(data.slotStart!);
+    const end = new Date(data.slotEnd!);
+    const summary = `Appointment: ${data.patientName} with ${data.doctorName}`;
+
+    // Only moves events that already exist — a user who never connected Google Calendar
+    // gets nothing created here, matching the "created on booking" behaviour they opted out of.
+    await Promise.all([
+      data.patientUserId && data.googleEventIdPatient
+        ? updateCalendarEventForUser(data.patientUserId, data.googleEventIdPatient, { summary, start, end })
+        : Promise.resolve(),
+      data.doctorUserId && data.googleEventIdDoctor
+        ? updateCalendarEventForUser(data.doctorUserId, data.googleEventIdDoctor, { summary, start, end })
         : Promise.resolve(),
     ]);
   }
