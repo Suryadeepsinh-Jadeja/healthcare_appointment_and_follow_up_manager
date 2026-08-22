@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DatePicker } from "../../../components/DatePicker";
 import { Button, ErrorText } from "../../../components/ui";
 import { apiGet, apiPatch, ApiError } from "../../../lib/api";
-import { Appointment, Slot } from "../../../lib/types";
+import { Appointment, Doctor, Slot } from "../../../lib/types";
+import { hasWorkingHoursOnDay } from "../../../lib/workingHours";
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -22,13 +24,24 @@ export function RescheduleForm({
   onDone: () => void;
   onError: (message: string) => void;
 }) {
-  const [date, setDate] = useState(todayIso());
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
+  const [date, setDate] = useState("");
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
   const [slotsError, setSlotsError] = useState<string | null>(null);
   const [submittingSlot, setSubmittingSlot] = useState<string | null>(null);
 
   useEffect(() => {
+    apiGet<{ doctor: Doctor }>(`/doctors/${appointment.doctorId}`)
+      .then((data) => {
+        setDoctor(data.doctor);
+        setDate((current) => current || data.doctor.earliestSlot?.slice(0, 10) || todayIso());
+      })
+      .catch(() => setDate((current) => current || todayIso()));
+  }, [appointment.doctorId]);
+
+  useEffect(() => {
+    if (!date) return;
     setLoadingSlots(true);
     setSlotsError(null);
     apiGet<{ slots: Slot[] }>(`/doctors/${appointment.doctorId}/slots?date=${date}`)
@@ -51,13 +64,13 @@ export function RescheduleForm({
 
   return (
     <div className="mt-3 rounded-md border border-slate-200 p-3">
-      <input
-        type="date"
-        value={date}
-        min={todayIso()}
-        onChange={(e) => setDate(e.target.value)}
-        className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-      />
+      {date && (
+        <DatePicker
+          value={date}
+          onChange={setDate}
+          isDayDisabled={(d) => !hasWorkingHoursOnDay(doctor?.workingHours, d)}
+        />
+      )}
 
       <ErrorText>{slotsError}</ErrorText>
 

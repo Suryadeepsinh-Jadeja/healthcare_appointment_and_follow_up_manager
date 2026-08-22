@@ -17,6 +17,15 @@ doctorsRouter.get("/", requireAuth, requireRole(Role.PATIENT, Role.ADMIN), async
   }
 });
 
+doctorsRouter.get("/:id", requireAuth, requireRole(Role.PATIENT, Role.ADMIN), async (req, res) => {
+  try {
+    const doctor = await doctorsService.getDoctorById(req.params.id);
+    res.json({ doctor });
+  } catch (error) {
+    handleRouteError(error, res);
+  }
+});
+
 doctorsRouter.get("/:id/slots", requireAuth, requireRole(Role.PATIENT), async (req, res) => {
   try {
     const { date } = doctorSlotsQuerySchema.parse(req.query);

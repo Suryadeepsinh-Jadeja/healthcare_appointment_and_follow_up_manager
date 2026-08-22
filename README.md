@@ -193,6 +193,7 @@ POST   /auth/refresh
 GET    /auth/me
 
 GET    /doctors?specialisation=      (PATIENT, ADMIN)
+GET    /doctors/:id                  (PATIENT, ADMIN)
 GET    /doctors/:id/slots?date=      (PATIENT)
 
 POST   /appointments/hold            (PATIENT)

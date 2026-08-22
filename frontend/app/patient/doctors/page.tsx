@@ -6,6 +6,19 @@ import { Card, ErrorText, Input, Label } from "../../../components/ui";
 import { apiGet, ApiError } from "../../../lib/api";
 import { Doctor } from "../../../lib/types";
 
+function formatEarliestSlot(iso: string | null | undefined): string {
+  if (!iso) return "No upcoming availability";
+  const date = new Date(iso);
+  return `Next available: ${date.toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+  })}`;
+}
+
 export default function DoctorSearchPage() {
   const [specialisation, setSpecialisation] = useState("");
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -53,6 +66,7 @@ export default function DoctorSearchPage() {
                 <h2 className="font-medium">{doctor.name}</h2>
                 <p className="text-sm text-slate-600">{doctor.specialisation}</p>
                 <p className="mt-2 text-xs text-slate-400">{doctor.slotDurationMin} min appointments</p>
+                <p className="mt-1 text-xs font-medium text-emerald-700">{formatEarliestSlot(doctor.earliestSlot)}</p>
               </Card>
             </Link>
           ))}

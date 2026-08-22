@@ -2,9 +2,11 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { DatePicker } from "../../../../components/DatePicker";
 import { Button, Card, ErrorText, Textarea } from "../../../../components/ui";
 import { apiGet, apiPost, ApiError } from "../../../../lib/api";
-import { Appointment, Slot } from "../../../../lib/types";
+import { Appointment, Doctor, Slot } from "../../../../lib/types";
+import { hasWorkingHoursOnDay } from "../../../../lib/workingHours";
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -18,7 +20,9 @@ export default function DoctorBookingPage() {
   const { doctorId } = useParams<{ doctorId: string }>();
   const router = useRouter();
 
-  const [date, setDate] = useState(todayIso());
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
+
+  const [date, setDate] = useState("");
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
   const [slotsError, setSlotsError] = useState<string | null>(null);
@@ -33,6 +37,16 @@ export default function DoctorBookingPage() {
   const [confirmed, setConfirmed] = useState<Appointment | null>(null);
 
   useEffect(() => {
+    apiGet<{ doctor: Doctor }>(`/doctors/${doctorId}`)
+      .then((data) => {
+        setDoctor(data.doctor);
+        setDate((current) => current || data.doctor.earliestSlot?.slice(0, 10) || todayIso());
+      })
+      .catch(() => setDate((current) => current || todayIso()));
+  }, [doctorId]);
+
+  useEffect(() => {
+    if (!date) return;
     setLoadingSlots(true);
     setSlotsError(null);
     apiGet<{ slots: Slot[] }>(`/doctors/${doctorId}/slots?date=${date}`)
@@ -156,13 +170,16 @@ export default function DoctorBookingPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Pick a time</h1>
-        <input
-          type="date"
-          value={date}
-          min={todayIso()}
-          onChange={(e) => setDate(e.target.value)}
-          className="mt-3 rounded-md border border-slate-300 px-3 py-2 text-sm"
-        />
+        {doctor && <p className="text-slate-600">for your appointment with {doctor.name}</p>}
+        {date && (
+          <div className="mt-3">
+            <DatePicker
+              value={date}
+              onChange={setDate}
+              isDayDisabled={(d) => !hasWorkingHoursOnDay(doctor?.workingHours, d)}
+            />
+          </div>
+        )}
       </div>
 
       <ErrorText>{slotsError}</ErrorText>
