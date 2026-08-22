@@ -26,6 +26,16 @@ export async function listDoctorAppointments(userId: string, date?: string) {
   });
 }
 
+export async function getNextAppointment(userId: string) {
+  const doctorProfile = await getDoctorProfileOrThrow(userId);
+
+  return prisma.appointment.findFirst({
+    where: { doctorId: doctorProfile.id, status: "CONFIRMED", slotStart: { gte: new Date() } },
+    include: { patient: { include: { user: { select: { name: true, email: true } } } } },
+    orderBy: { slotStart: "asc" },
+  });
+}
+
 async function getOwnedAppointmentOrThrow(userId: string, appointmentId: string) {
   const doctorProfile = await getDoctorProfileOrThrow(userId);
   const appointment = await prisma.appointment.findUnique({

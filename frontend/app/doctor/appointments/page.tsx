@@ -10,11 +10,34 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function formatNextAppointment(appointment: Appointment): string {
+  const when = new Date(appointment.slotStart).toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+  });
+  return `Next appointment: ${appointment.patient?.user.name} · ${when}`;
+}
+
 export default function DoctorAppointmentsPage() {
   const [date, setDate] = useState(todayIso());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [nextAppointment, setNextAppointment] = useState<Appointment | null>(null);
+  const [loadingNext, setLoadingNext] = useState(true);
+
+  useEffect(() => {
+    setLoadingNext(true);
+    apiGet<{ appointment: Appointment | null }>("/doctor/appointments/next")
+      .then((data) => setNextAppointment(data.appointment))
+      .catch(() => setNextAppointment(null))
+      .finally(() => setLoadingNext(false));
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -29,6 +52,11 @@ export default function DoctorAppointmentsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Appointments</h1>
+        {!loadingNext && (
+          <p className="mt-1 text-sm font-medium text-emerald-700">
+            {nextAppointment ? formatNextAppointment(nextAppointment) : "No upcoming appointments"}
+          </p>
+        )}
         <input
           type="date"
           value={date}

@@ -203,6 +203,7 @@ DELETE /appointments/:id             (PATIENT)
 GET    /appointments/me              (PATIENT)
 
 GET    /doctor/appointments?date=    (DOCTOR)
+GET    /doctor/appointments/next     (DOCTOR)
 GET    /doctor/appointments/:id      (DOCTOR)
 POST   /doctor/appointments/:id/notes (DOCTOR)
 

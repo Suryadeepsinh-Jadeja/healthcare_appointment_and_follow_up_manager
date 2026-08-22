@@ -19,6 +19,15 @@ doctorRouter.get("/appointments", async (req, res) => {
   }
 });
 
+doctorRouter.get("/appointments/next", async (req, res) => {
+  try {
+    const appointment = await doctorService.getNextAppointment(req.user!.id);
+    res.status(200).json({ appointment });
+  } catch (error) {
+    handleRouteError(error, res);
+  }
+});
+
 doctorRouter.get("/appointments/:id", async (req, res) => {
   try {
     const appointment = await doctorService.getDoctorAppointment(req.user!.id, req.params.id);
