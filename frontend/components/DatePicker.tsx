@@ -43,8 +43,8 @@ export function DatePicker({
   }
 
   return (
-    <div className="inline-block rounded-md border border-slate-300 p-3 text-sm">
-      <div className="mb-2 flex items-center justify-between">
+    <div className="w-full max-w-xl rounded-md border border-slate-300 p-4 text-sm">
+      <div className="mb-3 flex items-center justify-between">
         <button
           type="button"
           aria-label="Previous month"
@@ -66,13 +66,13 @@ export function DatePicker({
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs text-slate-400">
+      <div className="grid grid-cols-7 gap-2 text-center text-xs text-slate-400">
         {WEEKDAY_LABELS.map((label, i) => (
           <div key={i}>{label}</div>
         ))}
       </div>
 
-      <div className="mt-1 grid grid-cols-7 gap-1">
+      <div className="mt-2 grid grid-cols-7 gap-2">
         {cells.map((date, i) => {
           if (!date) return <div key={i} />;
           const key = toDateKey(date);
@@ -86,7 +86,7 @@ export function DatePicker({
               disabled={disabled}
               onClick={() => onChange(key)}
               className={cx(
-                "rounded-md py-1.5 text-sm transition",
+                "rounded-md py-2.5 text-sm transition",
                 isSelected ? "bg-slate-900 text-white" : "hover:bg-slate-100",
                 disabled && "cursor-not-allowed text-slate-300 hover:bg-transparent",
               )}

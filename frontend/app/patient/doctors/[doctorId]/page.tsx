@@ -171,38 +171,43 @@ export default function DoctorBookingPage() {
       <div>
         <h1 className="text-2xl font-semibold">Pick a time</h1>
         {doctor && <p className="text-slate-600">for your appointment with {doctor.name}</p>}
-        {date && (
-          <div className="mt-3">
-            <DatePicker
-              value={date}
-              onChange={setDate}
-              isDayDisabled={(d) => !hasWorkingHoursOnDay(doctor?.workingHours, d)}
-            />
-          </div>
-        )}
       </div>
+
+      {date && (
+        <div>
+          <h2 className="mb-2 text-sm font-medium text-slate-700">Dates</h2>
+          <DatePicker
+            value={date}
+            onChange={setDate}
+            isDayDisabled={(d) => !hasWorkingHoursOnDay(doctor?.workingHours, d)}
+          />
+        </div>
+      )}
 
       <ErrorText>{slotsError}</ErrorText>
       <ErrorText>{holdError}</ErrorText>
 
-      {loadingSlots ? (
-        <p className="text-sm text-slate-500">Loading slots...</p>
-      ) : slots.length === 0 ? (
-        <p className="text-sm text-slate-500">No available slots on this date.</p>
-      ) : (
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-          {slots.map((slot) => (
-            <Button
-              key={slot.start}
-              variant="secondary"
-              disabled={holding}
-              onClick={() => handleHold(slot)}
-            >
-              {formatSlotTime(slot.start)}
-            </Button>
-          ))}
-        </div>
-      )}
+      <div>
+        <h2 className="mb-2 text-sm font-medium text-slate-700">Time slots</h2>
+        {loadingSlots ? (
+          <p className="text-sm text-slate-500">Loading slots...</p>
+        ) : slots.length === 0 ? (
+          <p className="text-sm text-slate-500">No available slots on this date.</p>
+        ) : (
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+            {slots.map((slot) => (
+              <Button
+                key={slot.start}
+                variant="secondary"
+                disabled={holding}
+                onClick={() => handleHold(slot)}
+              >
+                {formatSlotTime(slot.start)}
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
