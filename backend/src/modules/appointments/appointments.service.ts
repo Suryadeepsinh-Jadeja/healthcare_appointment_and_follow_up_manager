@@ -112,17 +112,35 @@ export async function confirmAppointment(userId: string, appointmentId: string, 
     },
   });
 
-  await enqueueBookingConfirmationNotifications(confirmed.id);
+  // The appointment is already confirmed at this point — an enqueue failure
+  // (e.g. Redis unreachable) must not turn a successful confirm into a
+  // failed request. Any real failure still surfaces per-notification via
+  // NotificationLog / GET /admin/notifications/failed.
+  try {
+    await enqueueBookingConfirmationNotifications(confirmed.id);
+  } catch (error) {
+    console.error(`Failed to enqueue booking confirmation notifications for ${confirmed.id}:`, error);
+  }
 
   return confirmed;
 }
 
 export async function cancelAppointment(userId: string, appointmentId: string) {
-  const appointment = await getOwnedAppointmentOrThrow(userId, appointmentId);
+  await getOwnedAppointmentOrThrow(userId, appointmentId);
+
+  const appointment = await prisma.appointment.findUniqueOrThrow({
+    where: { id: appointmentId },
+    include: {
+      doctor: { include: { user: { select: { id: true, email: true, name: true } } } },
+      patient: { include: { user: { select: { id: true, email: true, name: true } } } },
+    },
+  });
 
   if (appointment.status === "CANCELLED" || appointment.status === "COMPLETED") {
     throw new HttpError("Appointment cannot be cancelled", 409);
   }
+
+  const wasConfirmed = appointment.status === "CONFIRMED";
 
   // Deleted, not soft-cancelled: @@unique([doctorId, slotStart]) is keyed on
   // the row existing at all, so leaving a CANCELLED row in place would
@@ -131,7 +149,29 @@ export async function cancelAppointment(userId: string, appointmentId: string) {
   // CANCELLED per spec, which is fine because the whole day is already
   // excluded from availability by the leave record itself.
   await prisma.appointment.delete({ where: { id: appointment.id } });
-  await enqueueCancellationNotifications(appointment.id);
+
+  // Only a previously-CONFIRMED appointment had confirmation notifications
+  // sent (and possibly calendar events created) in the first place — a HELD
+  // appointment never got that far, so there's nothing to notify about.
+  if (wasConfirmed) {
+    try {
+      await enqueueCancellationNotifications({
+        appointmentId: appointment.id,
+        patientEmail: appointment.patient.user.email,
+        patientName: appointment.patient.user.name,
+        doctorId: appointment.doctorId,
+        doctorName: appointment.doctor.user.name,
+        specialisation: appointment.doctor.specialisation,
+        slotStart: appointment.slotStart,
+        doctorUserId: appointment.doctor.user.id,
+        patientUserId: appointment.patient.user.id,
+        googleEventIdPatient: appointment.googleEventIdPatient,
+        googleEventIdDoctor: appointment.googleEventIdDoctor,
+      });
+    } catch (error) {
+      console.error(`Failed to enqueue cancellation notifications for ${appointment.id}:`, error);
+    }
+  }
 
   return { ...appointment, status: "CANCELLED" as const, holdExpiresAt: null };
 }
