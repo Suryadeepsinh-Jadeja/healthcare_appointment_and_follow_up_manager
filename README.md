@@ -122,6 +122,29 @@ asserts exactly one succeeds — the double-booking-prevention mechanism describ
 | --- | --- |
 | `NEXT_PUBLIC_API_URL` | Backend base URL |
 
+Only `DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, and `REDIS_URL` are actually
+required for the server to start (see `backend/src/config/env.ts`). `GEMINI_API_KEY`,
+`RESEND_API_KEY`, and the `GOOGLE_*` vars can all be left blank for local development — the
+app degrades gracefully rather than crashing: LLM calls fall back to a `generationFailed`
+result, emails queue and land in `NotificationLog` as `FAILED` after retries, and Google
+Calendar is simply never offered/attempted for a user who hasn't connected it. Fill them in
+once you want to actually exercise those integrations end-to-end.
+
+## Deploying your own instance
+
+- **Backend**: the included [render.yaml](render.yaml) is a Render Blueprint — on Render,
+  "New +" → "Blueprint" and point it at your fork. It provisions the web service and asks
+  for the `sync: false` secrets interactively; it does not provision Postgres/Redis, so add
+  those separately (Render's own managed Postgres/Redis, or any external provider) and set
+  `DATABASE_URL`/`REDIS_URL` yourself. Any other Node host works too — the build/start
+  commands are just `npm install --include=dev && npx prisma generate && npm run build &&
+  npx prisma migrate deploy` / `npm start`.
+- **Frontend**: any static/Next.js host works; Vercel needs no config beyond setting
+  `NEXT_PUBLIC_API_URL` to your backend's URL.
+- Update `FRONTEND_URL` (backend) to your deployed frontend origin, and add both your local
+  and deployed backend callback URLs to the Google OAuth client's authorized redirect URIs
+  (see below).
+
 ## Google Calendar setup
 
 1. Create a project at [console.cloud.google.com](https://console.cloud.google.com)
