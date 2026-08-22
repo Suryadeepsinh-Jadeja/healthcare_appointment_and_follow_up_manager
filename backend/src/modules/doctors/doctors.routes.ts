@@ -7,7 +7,7 @@ import { doctorSlotsQuerySchema, listDoctorsQuerySchema } from "./doctors.types"
 
 export const doctorsRouter = Router();
 
-doctorsRouter.get("/", requireAuth, requireRole(Role.PATIENT), async (req, res) => {
+doctorsRouter.get("/", requireAuth, requireRole(Role.PATIENT, Role.ADMIN), async (req, res) => {
   try {
     const { specialisation } = listDoctorsQuerySchema.parse(req.query);
     const doctors = await doctorsService.listDoctors(specialisation);

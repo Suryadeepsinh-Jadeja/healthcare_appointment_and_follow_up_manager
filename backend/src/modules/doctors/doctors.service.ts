@@ -14,6 +14,7 @@ export async function listDoctors(specialisation?: string) {
     name: doctor.user.name,
     specialisation: doctor.specialisation,
     slotDurationMin: doctor.slotDurationMin,
+    workingHours: doctor.workingHours,
   }));
 }
 

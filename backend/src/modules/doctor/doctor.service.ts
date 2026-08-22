@@ -61,6 +61,7 @@ export async function submitVisitNotes(userId: string, appointmentId: string, in
       prescription: input.prescription as unknown as Prisma.InputJsonValue,
       postVisitSummary: postVisitSummary as unknown as Prisma.InputJsonValue,
     },
+    include: { patient: { include: { user: { select: { id: true, email: true, name: true } } } } },
   });
 
   // Notes + prescription are already saved at this point — reminder

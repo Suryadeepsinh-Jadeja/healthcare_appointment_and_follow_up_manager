@@ -16,5 +16,6 @@ npm-debug.log*
 .claude/
 
 backend/prisma/dev.db
+*.tsbuildinfo
 
 .vercel
