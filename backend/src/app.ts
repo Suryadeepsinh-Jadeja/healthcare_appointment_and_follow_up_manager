@@ -4,6 +4,7 @@ import { env } from "./config/env";
 import { authRouter } from "./modules/auth/auth.routes";
 import { doctorsRouter } from "./modules/doctors/doctors.routes";
 import { appointmentsRouter } from "./modules/appointments/appointments.routes";
+import { googleRouter } from "./modules/calendar/google.routes";
 
 export function createApp() {
   const app = express();
@@ -18,6 +19,7 @@ export function createApp() {
   app.use("/auth", authRouter);
   app.use("/doctors", doctorsRouter);
   app.use("/appointments", appointmentsRouter);
+  app.use("/google", googleRouter);
 
   return app;
 }
