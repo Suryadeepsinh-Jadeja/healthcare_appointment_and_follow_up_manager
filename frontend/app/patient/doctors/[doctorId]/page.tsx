@@ -2,11 +2,9 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { DatePicker } from "../../../../components/DatePicker";
 import { Button, Card, ErrorText, Textarea } from "../../../../components/ui";
 import { apiGet, apiPost, ApiError } from "../../../../lib/api";
 import { Appointment, Doctor, Slot } from "../../../../lib/types";
-import { hasWorkingHoursOnDay } from "../../../../lib/workingHours";
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -176,10 +174,12 @@ export default function DoctorBookingPage() {
       {date && (
         <div>
           <h2 className="mb-2 text-sm font-medium text-slate-700">Dates</h2>
-          <DatePicker
+          <input
+            type="date"
             value={date}
-            onChange={setDate}
-            isDayDisabled={(d) => !hasWorkingHoursOnDay(doctor?.workingHours, d)}
+            min={todayIso()}
+            onChange={(e) => setDate(e.target.value)}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
         </div>
       )}
