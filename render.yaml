@@ -4,7 +4,11 @@ services:
     runtime: node
     plan: free
     rootDir: backend
-    buildCommand: npm install && npx prisma generate && npm run build && npx prisma migrate deploy
+    # --include=dev is required: NODE_ENV=production below makes plain
+    # `npm install` skip devDependencies, but typescript/@types/prisma (the
+    # build toolchain) live there deliberately -- they have no business in
+    # the runtime dependency tree.
+    buildCommand: npm install --include=dev && npx prisma generate && npm run build && npx prisma migrate deploy
     startCommand: npm start
     envVars:
       - key: NODE_ENV
