@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { ZodError } from "zod";
 import { requireAuth } from "../../middleware/auth.middleware";
 import { prisma } from "../../lib/prisma";
+import { handleRouteError } from "../../lib/errors";
 import * as authService from "./auth.service";
 import { loginSchema, refreshSchema, registerSchema } from "./auth.types";
 
@@ -24,7 +24,7 @@ authRouter.post("/register", async (req, res) => {
     const result = await authService.register(input);
     res.status(201).json(result);
   } catch (error) {
-    handleAuthError(error, res);
+    handleRouteError(error, res);
   }
 });
 
@@ -34,7 +34,7 @@ authRouter.post("/login", async (req, res) => {
     const result = await authService.login(input);
     res.status(200).json(result);
   } catch (error) {
-    handleAuthError(error, res);
+    handleRouteError(error, res);
   }
 });
 
@@ -44,17 +44,6 @@ authRouter.post("/refresh", async (req, res) => {
     const result = await authService.refresh(input.refreshToken);
     res.status(200).json(result);
   } catch (error) {
-    handleAuthError(error, res);
+    handleRouteError(error, res);
   }
 });
-
-function handleAuthError(error: unknown, res: import("express").Response) {
-  if (error instanceof ZodError) {
-    return res.status(400).json({ error: "Invalid request", details: error.flatten() });
-  }
-  if (error instanceof authService.AuthError) {
-    return res.status(error.status).json({ error: error.message });
-  }
-  console.error(error);
-  return res.status(500).json({ error: "Internal server error" });
-}
