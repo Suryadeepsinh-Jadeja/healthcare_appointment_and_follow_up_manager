@@ -69,7 +69,7 @@ export function doctorBookingConfirmationEmail(ctx: AppointmentEmailContext): Re
     subject: `Appointment confirmed with ${ctx.patientName}`,
     html: wrapper(
       "New appointment confirmed",
-      `<p>Hi Dr. ${ctx.doctorName},</p>
+      `<p>Hi ${ctx.doctorName},</p>
        <p>An appointment with <strong>${ctx.patientName}</strong> is confirmed for
        <strong>${formatDateTime(ctx.slotStart)}</strong>.</p>`,
     ),
@@ -81,7 +81,7 @@ export function doctorAppointmentReminderEmail(ctx: AppointmentEmailContext): Re
     subject: `Reminder: appointment with ${ctx.patientName}`,
     html: wrapper(
       "Upcoming appointment reminder",
-      `<p>Hi Dr. ${ctx.doctorName},</p>
+      `<p>Hi ${ctx.doctorName},</p>
        <p>This is a reminder for your upcoming appointment with <strong>${ctx.patientName}</strong>
        at <strong>${formatDateTime(ctx.slotStart)}</strong>.</p>`,
     ),
@@ -95,7 +95,7 @@ export function doctorCancellationEmail(
     subject: `Appointment with ${ctx.patientName} was cancelled`,
     html: wrapper(
       "Appointment cancelled",
-      `<p>Hi Dr. ${ctx.doctorName},</p>
+      `<p>Hi ${ctx.doctorName},</p>
        <p>The appointment with <strong>${ctx.patientName}</strong> on
        <strong>${formatDateTime(ctx.slotStart)}</strong> has been cancelled${ctx.reason ? ` (${ctx.reason})` : ""}.</p>`,
     ),
@@ -124,7 +124,7 @@ export function doctorRescheduledEmail(
     subject: `Appointment with ${ctx.patientName} was rescheduled`,
     html: wrapper(
       "Appointment rescheduled",
-      `<p>Hi Dr. ${ctx.doctorName},</p>
+      `<p>Hi ${ctx.doctorName},</p>
        <p>The appointment with <strong>${ctx.patientName}</strong> has moved from
        <strong>${formatDateTime(ctx.previousSlotStart)}</strong> to
        <strong>${formatDateTime(ctx.slotStart)}</strong>.</p>`,
