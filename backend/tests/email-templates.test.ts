@@ -3,6 +3,8 @@ import {
   appointmentReminderEmail,
   bookingConfirmationEmail,
   cancellationEmail,
+  doctorBookingConfirmationEmail,
+  doctorCancellationEmail,
   medicationReminderEmail,
 } from "../src/modules/notifications/email/templates";
 
@@ -30,6 +32,19 @@ describe("email templates", () => {
   it("renders a cancellation email with a rebooking link and optional reason", () => {
     const email = cancellationEmail({ ...ctx, rebookUrl: "https://clinic.test/book/doc-1", reason: "doctor on leave" });
     expect(email.html).toContain("https://clinic.test/book/doc-1");
+    expect(email.html).toContain("doctor on leave");
+  });
+
+  it("renders the doctor's booking confirmation addressed to the doctor, about the patient", () => {
+    const email = doctorBookingConfirmationEmail(ctx);
+    expect(email.subject).toContain("Asha Kulkarni");
+    expect(email.html).toContain("Dr. Arjun Mehta");
+    expect(email.html).toContain("Asha Kulkarni");
+  });
+
+  it("renders the doctor's cancellation email with the optional reason", () => {
+    const email = doctorCancellationEmail({ ...ctx, reason: "doctor on leave" });
+    expect(email.html).toContain("Asha Kulkarni");
     expect(email.html).toContain("doctor on leave");
   });
 

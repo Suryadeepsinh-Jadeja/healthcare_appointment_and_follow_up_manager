@@ -64,6 +64,44 @@ export function cancellationEmail(
   };
 }
 
+export function doctorBookingConfirmationEmail(ctx: AppointmentEmailContext): RenderedEmail {
+  return {
+    subject: `Appointment confirmed with ${ctx.patientName}`,
+    html: wrapper(
+      "New appointment confirmed",
+      `<p>Hi Dr. ${ctx.doctorName},</p>
+       <p>An appointment with <strong>${ctx.patientName}</strong> is confirmed for
+       <strong>${formatDateTime(ctx.slotStart)}</strong>.</p>`,
+    ),
+  };
+}
+
+export function doctorAppointmentReminderEmail(ctx: AppointmentEmailContext): RenderedEmail {
+  return {
+    subject: `Reminder: appointment with ${ctx.patientName}`,
+    html: wrapper(
+      "Upcoming appointment reminder",
+      `<p>Hi Dr. ${ctx.doctorName},</p>
+       <p>This is a reminder for your upcoming appointment with <strong>${ctx.patientName}</strong>
+       at <strong>${formatDateTime(ctx.slotStart)}</strong>.</p>`,
+    ),
+  };
+}
+
+export function doctorCancellationEmail(
+  ctx: AppointmentEmailContext & { reason?: string },
+): RenderedEmail {
+  return {
+    subject: `Appointment with ${ctx.patientName} was cancelled`,
+    html: wrapper(
+      "Appointment cancelled",
+      `<p>Hi Dr. ${ctx.doctorName},</p>
+       <p>The appointment with <strong>${ctx.patientName}</strong> on
+       <strong>${formatDateTime(ctx.slotStart)}</strong> has been cancelled${ctx.reason ? ` (${ctx.reason})` : ""}.</p>`,
+    ),
+  };
+}
+
 export function medicationReminderEmail(ctx: {
   patientName: string;
   drug: string;

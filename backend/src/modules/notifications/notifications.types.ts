@@ -16,6 +16,7 @@ export interface NotificationJobData {
   // EMAIL: BOOKING_CONFIRM / REMINDER / CANCELLATION
   patientEmail?: string;
   patientName?: string;
+  doctorEmail?: string;
   doctorName?: string;
   specialisation?: string;
   slotStart?: string; // ISO

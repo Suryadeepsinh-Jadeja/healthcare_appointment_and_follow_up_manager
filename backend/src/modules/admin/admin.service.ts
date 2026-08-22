@@ -111,6 +111,7 @@ export async function createDoctorLeave(doctorId: string, date: string, reason?:
         patientEmail: appointment.patient.user.email,
         patientName: appointment.patient.user.name,
         doctorId: appointment.doctorId,
+        doctorEmail: appointment.doctor.user.email,
         doctorName: appointment.doctor.user.name,
         specialisation: appointment.doctor.specialisation,
         slotStart: appointment.slotStart,

@@ -5,7 +5,11 @@ import {
   appointmentReminderEmail,
   bookingConfirmationEmail,
   cancellationEmail,
+  doctorAppointmentReminderEmail,
+  doctorBookingConfirmationEmail,
+  doctorCancellationEmail,
   medicationReminderEmail,
+  RenderedEmail,
 } from "../modules/notifications/email/templates";
 import {
   createCalendarEventForUser,
@@ -15,38 +19,55 @@ import { NotificationJobData } from "../modules/notifications/notifications.type
 import { redisConnection } from "./connection";
 import { NOTIFICATIONS_QUEUE_NAME } from "./queues";
 
+/** Sends the patient's email, and the doctor's counterpart alongside it whenever a doctor email/template is given. */
+async function sendPair(
+  patientEmail: string,
+  patientEmailRendered: RenderedEmail,
+  doctorEmail: string | undefined,
+  doctorEmailRendered: RenderedEmail | null,
+): Promise<void> {
+  const sends = [sendEmail({ to: patientEmail, subject: patientEmailRendered.subject, html: patientEmailRendered.html })];
+  if (doctorEmail && doctorEmailRendered) {
+    sends.push(sendEmail({ to: doctorEmail, subject: doctorEmailRendered.subject, html: doctorEmailRendered.html }));
+  }
+  await Promise.all(sends);
+}
+
 async function sendNotificationEmail(data: NotificationJobData): Promise<void> {
   switch (data.type) {
     case "BOOKING_CONFIRM": {
-      const email = bookingConfirmationEmail({
+      const ctx = {
         patientName: data.patientName!,
         doctorName: data.doctorName!,
         specialisation: data.specialisation!,
         slotStart: new Date(data.slotStart!),
-      });
-      await sendEmail({ to: data.patientEmail!, subject: email.subject, html: email.html });
+      };
+      await sendPair(data.patientEmail!, bookingConfirmationEmail(ctx), data.doctorEmail, doctorBookingConfirmationEmail(ctx));
       return;
     }
     case "REMINDER": {
-      const email = appointmentReminderEmail({
+      const ctx = {
         patientName: data.patientName!,
         doctorName: data.doctorName!,
         specialisation: data.specialisation!,
         slotStart: new Date(data.slotStart!),
-      });
-      await sendEmail({ to: data.patientEmail!, subject: email.subject, html: email.html });
+      };
+      await sendPair(data.patientEmail!, appointmentReminderEmail(ctx), data.doctorEmail, doctorAppointmentReminderEmail(ctx));
       return;
     }
     case "CANCELLATION": {
-      const email = cancellationEmail({
+      const ctx = {
         patientName: data.patientName!,
         doctorName: data.doctorName!,
         specialisation: data.specialisation!,
         slotStart: new Date(data.slotStart!),
-        rebookUrl: data.rebookUrl!,
-        reason: data.reason,
-      });
-      await sendEmail({ to: data.patientEmail!, subject: email.subject, html: email.html });
+      };
+      await sendPair(
+        data.patientEmail!,
+        cancellationEmail({ ...ctx, rebookUrl: data.rebookUrl!, reason: data.reason }),
+        data.doctorEmail,
+        doctorCancellationEmail({ ...ctx, reason: data.reason }),
+      );
       return;
     }
     case "MED_REMINDER": {

@@ -72,6 +72,7 @@ export async function enqueueBookingConfirmationNotifications(appointmentId: str
     appointmentId,
     patientEmail: appointment.patient.user.email,
     patientName: appointment.patient.user.name,
+    doctorEmail: appointment.doctor.user.email,
     doctorName: appointment.doctor.user.name,
     specialisation: appointment.doctor.specialisation,
     slotStart: appointment.slotStart.toISOString(),
@@ -99,6 +100,7 @@ export interface CancellationSnapshot {
   patientEmail: string;
   patientName: string;
   doctorId: string;
+  doctorEmail: string;
   doctorName: string;
   specialisation: string;
   slotStart: Date;
@@ -114,6 +116,7 @@ export async function enqueueCancellationNotifications(snapshot: CancellationSna
     appointmentId: snapshot.appointmentId,
     patientEmail: snapshot.patientEmail,
     patientName: snapshot.patientName,
+    doctorEmail: snapshot.doctorEmail,
     doctorName: snapshot.doctorName,
     specialisation: snapshot.specialisation,
     slotStart: snapshot.slotStart.toISOString(),
