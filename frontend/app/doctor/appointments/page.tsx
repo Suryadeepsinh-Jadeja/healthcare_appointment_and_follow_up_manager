@@ -23,7 +23,7 @@ function formatNextAppointment(appointment: Appointment): string {
 }
 
 export default function DoctorAppointmentsPage() {
-  const [date, setDate] = useState(todayIso());
+  const [date, setDate] = useState("");
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,12 +34,19 @@ export default function DoctorAppointmentsPage() {
   useEffect(() => {
     setLoadingNext(true);
     apiGet<{ appointment: Appointment | null }>("/doctor/appointments/next")
-      .then((data) => setNextAppointment(data.appointment))
-      .catch(() => setNextAppointment(null))
+      .then((data) => {
+        setNextAppointment(data.appointment);
+        setDate((current) => current || data.appointment?.slotStart.slice(0, 10) || todayIso());
+      })
+      .catch(() => {
+        setNextAppointment(null);
+        setDate((current) => current || todayIso());
+      })
       .finally(() => setLoadingNext(false));
   }, []);
 
   useEffect(() => {
+    if (!date) return;
     setLoading(true);
     setError(null);
     apiGet<{ appointments: Appointment[] }>(`/doctor/appointments?date=${date}`)
