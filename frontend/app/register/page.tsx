@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { Button, Card, ErrorText, Input, Label } from "../../components/ui";
+import { BrandMark, Button, Card, ErrorText, Input, Label } from "../../components/ui";
 import { ApiError } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 
@@ -32,9 +32,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
+    <main className="hero-gradient flex min-h-screen flex-col items-center justify-center gap-8 p-6">
+      <Link href="/" className="flex items-center gap-2.5">
+        <BrandMark />
+        <span className="font-display text-xl font-semibold text-slate-900">Healthcare Manager</span>
+      </Link>
       <Card className="w-full max-w-sm">
-        <h1 className="mb-6 text-xl font-semibold">Create your patient account</h1>
+        <h1 className="mb-6 font-display text-xl font-semibold text-slate-900">Create your patient account</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="name">Full name</Label>
@@ -66,7 +70,7 @@ export default function RegisterPage() {
         </form>
         <p className="mt-4 text-center text-sm text-slate-600">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-slate-900 underline">
+          <Link href="/login" className="font-medium text-brand-700 underline">
             Sign in
           </Link>
         </p>

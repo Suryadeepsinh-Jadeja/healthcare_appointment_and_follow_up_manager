@@ -65,7 +65,7 @@ export default function AdminDoctorsPage() {
           <div className="mt-4 space-y-3">
             {doctors.map((doctor) => (
               <Link key={doctor.id} href={`/admin/doctors/${doctor.id}`}>
-                <Card className="transition hover:border-slate-400">
+                <Card className="transition hover:border-brand-300 hover:shadow-md hover:shadow-brand-900/5">
                   <p className="font-medium">{doctor.name}</p>
                   <p className="text-sm text-slate-600">
                     {doctor.specialisation} — {doctor.slotDurationMin} min slots

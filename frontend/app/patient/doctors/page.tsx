@@ -62,7 +62,7 @@ export default function DoctorSearchPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           {doctors.map((doctor) => (
             <Link key={doctor.id} href={`/patient/doctors/${doctor.id}`}>
-              <Card className="transition hover:border-slate-400">
+              <Card className="transition hover:border-brand-300 hover:shadow-md hover:shadow-brand-900/5">
                 <h2 className="font-medium">{doctor.name}</h2>
                 <p className="text-sm text-slate-600">{doctor.specialisation}</p>
                 <p className="mt-2 text-xs text-slate-400">{doctor.slotDurationMin} min appointments</p>

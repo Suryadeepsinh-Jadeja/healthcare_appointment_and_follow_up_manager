@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { Button, Card, ErrorText, Input, Label } from "../../components/ui";
+import { BrandMark, Button, Card, ErrorText, Input, Label } from "../../components/ui";
 import { ApiError } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 
@@ -36,10 +36,13 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-6">
-      <span className="text-xl font-semibold">Healthcare Manager</span>
+    <main className="hero-gradient flex min-h-screen flex-col items-center justify-center gap-8 p-6">
+      <Link href="/" className="flex items-center gap-2.5">
+        <BrandMark />
+        <span className="font-display text-xl font-semibold text-slate-900">Healthcare Manager</span>
+      </Link>
       <Card className="w-full max-w-sm">
-        <h1 className="mb-6 text-xl font-semibold">Sign in</h1>
+        <h1 className="mb-6 font-display text-xl font-semibold text-slate-900">Sign in</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>
@@ -62,7 +65,7 @@ export default function LoginPage() {
         </form>
         <p className="mt-4 text-center text-sm text-slate-600">
           New patient?{" "}
-          <Link href="/register" className="font-medium text-slate-900 underline">
+          <Link href="/register" className="font-medium text-brand-700 underline">
             Register
           </Link>
         </p>

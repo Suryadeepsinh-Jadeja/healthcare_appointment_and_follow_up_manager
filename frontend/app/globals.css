@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+::selection {
+  background-color: theme("colors.brand.200");
+  color: theme("colors.brand.900");
+}
+
+.hero-gradient {
+  background:
+    radial-gradient(55% 45% at 12% 8%, theme("colors.brand.200") 0%, transparent 60%),
+    radial-gradient(45% 38% at 92% 15%, theme("colors.accent.200") 0%, transparent 60%),
+    radial-gradient(60% 50% at 50% 100%, theme("colors.brand.100") 0%, transparent 60%),
+    theme("colors.canvas");
+}
