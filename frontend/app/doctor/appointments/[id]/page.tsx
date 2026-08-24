@@ -3,6 +3,8 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Badge, Button, Card, ErrorText, Input, Label, Textarea } from "../../../../components/ui";
+import { Reveal } from "../../../../components/motion";
+import { useToast } from "../../../../components/Toast";
 import { apiGet, apiPost, ApiError } from "../../../../lib/api";
 import { Appointment } from "../../../../lib/types";
 
@@ -18,6 +20,7 @@ const EMPTY_ROW: PrescriptionRow = { drug: "", dose: "", timesPerDay: 1, days: 1
 export default function DoctorAppointmentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { push } = useToast();
 
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,6 +52,7 @@ export default function DoctorAppointmentDetailPage() {
         prescription,
       });
       setAppointment(data.appointment);
+      push("Visit completed — summary sent to patient.");
     } catch (err) {
       setSubmitError(err instanceof ApiError ? err.message : "Could not submit notes.");
     } finally {
@@ -60,7 +64,7 @@ export default function DoctorAppointmentDetailPage() {
   if (error || !appointment) return <ErrorText>{error ?? "Appointment not found."}</ErrorText>;
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <Reveal className="max-w-2xl space-y-6">
       <Button variant="secondary" onClick={() => router.push("/doctor/appointments")}>
         Back to appointments
       </Button>
@@ -173,6 +177,6 @@ export default function DoctorAppointmentDetailPage() {
           </Button>
         </Card>
       ) : null}
-    </div>
+    </Reveal>
   );
 }

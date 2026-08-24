@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Badge, Button, Card, ErrorText } from "../../../components/ui";
+import { Reveal, Stagger, StaggerItem } from "../../../components/motion";
+import { CardSkeleton } from "../../../components/Skeleton";
+import { useToast } from "../../../components/Toast";
 import { apiDelete, apiGet, ApiError } from "../../../lib/api";
 import { Appointment } from "../../../lib/types";
 import { RescheduleForm } from "./RescheduleForm";
 
 export default function MyAppointmentsPage() {
+  const { push } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +31,7 @@ export default function MyAppointmentsPage() {
     setCancellingId(id);
     try {
       await apiDelete(`/appointments/${id}`);
+      push("Appointment cancelled.");
       load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not cancel this appointment.");
@@ -37,17 +42,23 @@ export default function MyAppointmentsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">My appointments</h1>
+      <Reveal>
+        <h1 className="font-display text-2xl font-semibold text-slate-900">My appointments</h1>
+      </Reveal>
       <ErrorText>{error}</ErrorText>
 
       {loading ? (
-        <p className="text-sm text-slate-500">Loading...</p>
+        <div className="space-y-4">
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
       ) : appointments.length === 0 ? (
         <p className="text-sm text-slate-500">No appointments yet.</p>
       ) : (
-        <div className="space-y-4">
+        <Stagger className="space-y-4">
           {appointments.map((appointment) => (
-            <Card key={appointment.id}>
+            <StaggerItem key={appointment.id}>
+            <Card>
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-medium">
@@ -121,14 +132,16 @@ export default function MyAppointmentsPage() {
                   appointment={appointment}
                   onDone={() => {
                     setReschedulingId(null);
+                    push("Appointment rescheduled.");
                     load();
                   }}
                   onError={(message) => setError(message)}
                 />
               )}
             </Card>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       )}
     </div>
   );

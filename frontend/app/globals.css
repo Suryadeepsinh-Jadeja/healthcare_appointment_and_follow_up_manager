@@ -14,3 +14,31 @@
     radial-gradient(60% 50% at 50% 100%, theme("colors.brand.100") 0%, transparent 60%),
     theme("colors.canvas");
 }
+
+@keyframes blob-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(4%, 6%) scale(1.08); }
+  66% { transform: translate(-3%, 3%) scale(0.96); }
+}
+
+@keyframes blob-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-5%, -4%) scale(1.06); }
+  66% { transform: translate(3%, -5%) scale(0.94); }
+}
+
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.blob-a {
+  animation: blob-drift-a 16s ease-in-out infinite;
+}
+
+.blob-b {
+  animation: blob-drift-b 20s ease-in-out infinite;
+}

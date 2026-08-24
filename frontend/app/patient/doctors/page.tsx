@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Card, ErrorText, Input, Label } from "../../../components/ui";
+import { Reveal, Stagger, StaggerItem } from "../../../components/motion";
+import { CardSkeleton } from "../../../components/Skeleton";
 import { apiGet, ApiError } from "../../../lib/api";
 import { Doctor } from "../../../lib/types";
 
@@ -37,12 +39,12 @@ export default function DoctorSearchPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Find a doctor</h1>
+      <Reveal>
+        <h1 className="font-display text-2xl font-semibold text-slate-900">Find a doctor</h1>
         <p className="text-slate-600">Search by specialisation and pick a time that works for you.</p>
-      </div>
+      </Reveal>
 
-      <div className="max-w-xs">
+      <Reveal delay={0.05} className="max-w-xs">
         <Label htmlFor="specialisation">Specialisation</Label>
         <Input
           id="specialisation"
@@ -50,27 +52,34 @@ export default function DoctorSearchPage() {
           value={specialisation}
           onChange={(e) => setSpecialisation(e.target.value)}
         />
-      </div>
+      </Reveal>
 
       <ErrorText>{error}</ErrorText>
 
       {loading ? (
-        <p className="text-sm text-slate-500">Loading doctors...</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
       ) : doctors.length === 0 ? (
         <p className="text-sm text-slate-500">No doctors found.</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <Stagger className="grid gap-4 sm:grid-cols-2">
           {doctors.map((doctor) => (
-            <Link key={doctor.id} href={`/patient/doctors/${doctor.id}`}>
-              <Card className="transition hover:border-brand-300 hover:shadow-md hover:shadow-brand-900/5">
-                <h2 className="font-medium">{doctor.name}</h2>
-                <p className="text-sm text-slate-600">{doctor.specialisation}</p>
-                <p className="mt-2 text-xs text-slate-400">{doctor.slotDurationMin} min appointments</p>
-                <p className="mt-1 text-xs font-medium text-emerald-700">{formatEarliestSlot(doctor.earliestSlot)}</p>
-              </Card>
-            </Link>
+            <StaggerItem key={doctor.id}>
+              <Link href={`/patient/doctors/${doctor.id}`}>
+                <Card hover>
+                  <h2 className="font-medium">{doctor.name}</h2>
+                  <p className="text-sm text-slate-600">{doctor.specialisation}</p>
+                  <p className="mt-2 text-xs text-slate-400">{doctor.slotDurationMin} min appointments</p>
+                  <p className="mt-1 text-xs font-medium text-emerald-700">
+                    {formatEarliestSlot(doctor.earliestSlot)}
+                  </p>
+                </Card>
+              </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       )}
     </div>
   );

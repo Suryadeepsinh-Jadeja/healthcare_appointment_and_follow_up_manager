@@ -1,16 +1,13 @@
-import { RequireRole } from "../../components/RequireRole";
-import { PortalNav } from "../../components/PortalNav";
+"use client";
 
-const LINKS = [
-  { href: "/admin/doctors", label: "Doctors" },
-  { href: "/admin/notifications", label: "Failed notifications" },
-];
+import { RequireRole } from "../../components/RequireRole";
+import { AppShell } from "../../components/AppShell";
+import { NAV_LINKS } from "../../lib/navLinks";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <RequireRole role="ADMIN">
-      <PortalNav links={LINKS} />
-      <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
+      <AppShell links={NAV_LINKS.ADMIN}>{children}</AppShell>
     </RequireRole>
   );
 }

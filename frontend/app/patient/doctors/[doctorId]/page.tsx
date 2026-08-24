@@ -1,10 +1,18 @@
 "use client";
 
+import confetti from "canvas-confetti";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Button, Card, ErrorText, Textarea } from "../../../../components/ui";
+import { Reveal, Stagger, StaggerItem } from "../../../../components/motion";
 import { apiGet, apiPost, ApiError } from "../../../../lib/api";
 import { Appointment, Doctor, Slot } from "../../../../lib/types";
+
+function celebrate() {
+  const colors = ["#7440e0", "#a685f5", "#a3e635", "#65a30d"];
+  confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 }, colors, startVelocity: 45 });
+  setTimeout(() => confetti({ particleCount: 50, spread: 100, origin: { y: 0.6 }, colors, scalar: 0.8 }), 150);
+}
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -78,6 +86,7 @@ export default function DoctorBookingPage() {
     try {
       const data = await apiPost<{ appointment: Appointment }>(`/appointments/${held.id}/confirm`, { symptoms });
       setConfirmed(data.appointment);
+      celebrate();
     } catch (err) {
       if (err instanceof ApiError && err.status === 410) {
         setConfirmError("Your hold expired. Please pick a slot again.");
@@ -92,7 +101,7 @@ export default function DoctorBookingPage() {
 
   if (confirmed) {
     return (
-      <div className="max-w-xl">
+      <Reveal className="max-w-xl">
         <Card>
           <h1 className="text-xl font-semibold text-emerald-700">Appointment confirmed</h1>
           <p className="mt-2 text-slate-600">
@@ -114,13 +123,13 @@ export default function DoctorBookingPage() {
             View my appointments
           </Button>
         </Card>
-      </div>
+      </Reveal>
     );
   }
 
   if (held) {
     return (
-      <div className="max-w-xl">
+      <Reveal className="max-w-xl">
         <Card>
           <h1 className="text-xl font-semibold">Confirm your appointment</h1>
           <p className="mt-1 text-sm text-slate-600">
@@ -160,19 +169,19 @@ export default function DoctorBookingPage() {
             </Button>
           </div>
         </Card>
-      </div>
+      </Reveal>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Pick a time</h1>
+      <Reveal>
+        <h1 className="font-display text-2xl font-semibold text-slate-900">Pick a time</h1>
         {doctor && <p className="text-slate-600">for your appointment with {doctor.name}</p>}
-      </div>
+      </Reveal>
 
       {date && (
-        <div>
+        <Reveal delay={0.05}>
           <h2 className="mb-2 text-sm font-medium text-slate-700">Dates</h2>
           <input
             type="date"
@@ -181,7 +190,7 @@ export default function DoctorBookingPage() {
             onChange={(e) => setDate(e.target.value)}
             className="rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 transition focus:border-brand-400 focus:outline-none focus:ring-4 focus:ring-brand-100"
           />
-        </div>
+        </Reveal>
       )}
 
       <ErrorText>{slotsError}</ErrorText>
@@ -194,18 +203,20 @@ export default function DoctorBookingPage() {
         ) : slots.length === 0 ? (
           <p className="text-sm text-slate-500">No available slots on this date.</p>
         ) : (
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+          <Stagger className="grid grid-cols-3 gap-3 sm:grid-cols-4" stagger={0.03}>
             {slots.map((slot) => (
-              <Button
-                key={slot.start}
-                variant="secondary"
-                disabled={holding}
-                onClick={() => handleHold(slot)}
-              >
-                {formatSlotTime(slot.start)}
-              </Button>
+              <StaggerItem key={slot.start}>
+                <Button
+                  variant="secondary"
+                  disabled={holding}
+                  onClick={() => handleHold(slot)}
+                  className="w-full"
+                >
+                  {formatSlotTime(slot.start)}
+                </Button>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         )}
       </div>
     </div>

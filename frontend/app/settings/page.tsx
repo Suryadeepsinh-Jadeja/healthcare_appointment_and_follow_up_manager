@@ -2,9 +2,12 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { AppShell } from "../../components/AppShell";
+import { Reveal } from "../../components/motion";
 import { Button, Card } from "../../components/ui";
 import { apiGet, ApiError } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
+import { NAV_LINKS } from "../../lib/navLinks";
 
 export default function SettingsPage() {
   return (
@@ -51,35 +54,37 @@ function SettingsPageContent() {
   if (loading || !user) return null;
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
-      <h1 className="text-2xl font-semibold">Settings</h1>
+    <AppShell links={NAV_LINKS[user.role]}>
+      <Reveal className="max-w-2xl">
+        <h1 className="font-display text-2xl font-semibold text-slate-900">Settings</h1>
 
-      <Card className="mt-6">
-        <h2 className="font-medium">Google Calendar</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Connect your Google Calendar so booking confirmations automatically create calendar events.
-        </p>
+        <Card className="mt-6">
+          <h2 className="font-medium">Google Calendar</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Connect your Google Calendar so booking confirmations automatically create calendar events.
+          </p>
 
-        {calendarStatus === "connected" && (
-          <p className="mt-3 text-sm text-emerald-700">Google Calendar connected successfully.</p>
-        )}
-        {calendarStatus === "error" && (
-          <p className="mt-3 text-sm text-red-600">Something went wrong connecting Google Calendar. Please try again.</p>
-        )}
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-
-        <div className="mt-4">
-          {connected === null ? (
-            <p className="text-sm text-slate-500">Checking connection status...</p>
-          ) : connected ? (
-            <p className="text-sm text-emerald-700">✓ Connected</p>
-          ) : (
-            <Button onClick={handleConnect} disabled={connecting}>
-              {connecting ? "Redirecting..." : "Connect Google Calendar"}
-            </Button>
+          {calendarStatus === "connected" && (
+            <p className="mt-3 text-sm text-emerald-700">Google Calendar connected successfully.</p>
           )}
-        </div>
-      </Card>
-    </div>
+          {calendarStatus === "error" && (
+            <p className="mt-3 text-sm text-red-600">Something went wrong connecting Google Calendar. Please try again.</p>
+          )}
+          {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+
+          <div className="mt-4">
+            {connected === null ? (
+              <p className="text-sm text-slate-500">Checking connection status...</p>
+            ) : connected ? (
+              <p className="text-sm text-emerald-700">✓ Connected</p>
+            ) : (
+              <Button onClick={handleConnect} disabled={connecting}>
+                {connecting ? "Redirecting..." : "Connect Google Calendar"}
+              </Button>
+            )}
+          </div>
+        </Card>
+      </Reveal>
+    </AppShell>
   );
 }

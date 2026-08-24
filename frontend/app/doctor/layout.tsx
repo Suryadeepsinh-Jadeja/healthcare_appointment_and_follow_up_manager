@@ -1,16 +1,13 @@
-import { RequireRole } from "../../components/RequireRole";
-import { PortalNav } from "../../components/PortalNav";
+"use client";
 
-const LINKS = [
-  { href: "/doctor/appointments", label: "Appointments" },
-  { href: "/settings", label: "Settings" },
-];
+import { RequireRole } from "../../components/RequireRole";
+import { AppShell } from "../../components/AppShell";
+import { NAV_LINKS } from "../../lib/navLinks";
 
 export default function DoctorLayout({ children }: { children: React.ReactNode }) {
   return (
     <RequireRole role="DOCTOR">
-      <PortalNav links={LINKS} />
-      <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
+      <AppShell links={NAV_LINKS.DOCTOR}>{children}</AppShell>
     </RequireRole>
   );
 }

@@ -4,10 +4,14 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { Button, Card, ErrorText, Input, Label } from "../../../components/ui";
 import { WorkingHoursEditor, WorkingHoursState, workingHoursStateToPayload } from "../../../components/WorkingHoursEditor";
+import { Reveal, Stagger, StaggerItem } from "../../../components/motion";
+import { CardSkeleton } from "../../../components/Skeleton";
+import { useToast } from "../../../components/Toast";
 import { apiGet, apiPost, ApiError } from "../../../lib/api";
 import { Doctor } from "../../../lib/types";
 
 export default function AdminDoctorsPage() {
+  const { push } = useToast();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,6 +51,7 @@ export default function AdminDoctorsPage() {
       setPassword("");
       setSpecialisation("");
       setWorkingHours({});
+      push(`${name} added.`);
       load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not create doctor.");
@@ -57,25 +62,30 @@ export default function AdminDoctorsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold">Doctors</h1>
+      <Reveal>
+        <h1 className="font-display text-2xl font-semibold text-slate-900">Doctors</h1>
         {loading ? (
-          <p className="mt-3 text-sm text-slate-500">Loading...</p>
-        ) : (
           <div className="mt-4 space-y-3">
-            {doctors.map((doctor) => (
-              <Link key={doctor.id} href={`/admin/doctors/${doctor.id}`}>
-                <Card className="transition hover:border-brand-300 hover:shadow-md hover:shadow-brand-900/5">
-                  <p className="font-medium">{doctor.name}</p>
-                  <p className="text-sm text-slate-600">
-                    {doctor.specialisation} — {doctor.slotDurationMin} min slots
-                  </p>
-                </Card>
-              </Link>
-            ))}
+            <CardSkeleton />
+            <CardSkeleton />
           </div>
+        ) : (
+          <Stagger className="mt-4 space-y-3">
+            {doctors.map((doctor) => (
+              <StaggerItem key={doctor.id}>
+                <Link href={`/admin/doctors/${doctor.id}`}>
+                  <Card hover>
+                    <p className="font-medium">{doctor.name}</p>
+                    <p className="text-sm text-slate-600">
+                      {doctor.specialisation} — {doctor.slotDurationMin} min slots
+                    </p>
+                  </Card>
+                </Link>
+              </StaggerItem>
+            ))}
+          </Stagger>
         )}
-      </div>
+      </Reveal>
 
       <Card>
         <h2 className="font-medium">Add a doctor</h2>

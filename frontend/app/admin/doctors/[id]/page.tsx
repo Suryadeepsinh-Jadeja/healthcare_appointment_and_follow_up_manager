@@ -9,12 +9,15 @@ import {
   workingHoursPayloadToState,
   workingHoursStateToPayload,
 } from "../../../../components/WorkingHoursEditor";
+import { Reveal } from "../../../../components/motion";
+import { useToast } from "../../../../components/Toast";
 import { apiGet, apiPatch, apiPost, ApiError } from "../../../../lib/api";
 import { Doctor } from "../../../../lib/types";
 
 export default function AdminDoctorDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { push } = useToast();
 
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,6 +60,7 @@ export default function AdminDoctorDetailPage() {
         workingHours: workingHoursStateToPayload(workingHours),
       });
       setSaved(true);
+      push("Changes saved.");
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.message : "Could not save changes.");
     } finally {
@@ -81,6 +85,7 @@ export default function AdminDoctorDetailPage() {
       );
       setLeaveDate("");
       setLeaveReason("");
+      push("Leave added.");
     } catch (err) {
       setLeaveError(err instanceof ApiError ? err.message : "Could not add leave.");
     } finally {
@@ -92,7 +97,7 @@ export default function AdminDoctorDetailPage() {
   if (!doctor) return <ErrorText>Doctor not found.</ErrorText>;
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <Reveal className="max-w-2xl space-y-6">
       <Button variant="secondary" onClick={() => router.push("/admin/doctors")}>
         Back to doctors
       </Button>
@@ -160,6 +165,6 @@ export default function AdminDoctorDetailPage() {
           </Button>
         </form>
       </Card>
-    </div>
+    </Reveal>
   );
 }
