@@ -48,7 +48,7 @@ export default function LoginPage() {
         <span className="font-display text-xl font-semibold text-slate-900">Healthcare Manager</span>
       </Link>
       <Shake triggerKey={shakeKey}>
-        <Card className="relative w-full max-w-sm">
+        <Card className="relative w-full max-w-md">
           <h1 className="mb-6 font-display text-xl font-semibold text-slate-900">Sign in</h1>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
