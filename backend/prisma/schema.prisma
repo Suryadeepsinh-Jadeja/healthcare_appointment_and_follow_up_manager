@@ -34,6 +34,7 @@ model DoctorProfile {
   specialisation  String
   slotDurationMin Int      @default(20)
   workingHours    Json
+  active          Boolean  @default(true)
 
   leaves       DoctorLeave[]
   appointments Appointment[]

@@ -29,6 +29,9 @@ async function assertSlotIsBookable(doctorId: string, slotStart: Date) {
   if (!doctor) {
     throw new HttpError("Doctor not found", 404);
   }
+  if (!doctor.active) {
+    throw new HttpError("This doctor is no longer accepting appointments", 410);
+  }
 
   const date = toDateKey(slotStart);
   const isOnLeave = await isDoctorOnLeave(doctorId, date);

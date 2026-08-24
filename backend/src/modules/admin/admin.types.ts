@@ -21,6 +21,7 @@ export const updateDoctorSchema = z.object({
   specialisation: z.string().min(1).optional(),
   slotDurationMin: z.number().int().positive().optional(),
   workingHours: workingHoursSchema.optional(),
+  active: z.boolean().optional(),
 });
 
 export const createLeaveSchema = z.object({

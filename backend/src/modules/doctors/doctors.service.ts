@@ -60,9 +60,12 @@ async function findEarliestAvailableSlot(doctor: DoctorProfile): Promise<Slot | 
   return null;
 }
 
-export async function listDoctors(specialisation?: string) {
+export async function listDoctors(specialisation?: string, includeInactive = false) {
   const doctors = await prisma.doctorProfile.findMany({
-    where: specialisation ? { specialisation: { equals: specialisation, mode: "insensitive" } } : undefined,
+    where: {
+      ...(specialisation ? { specialisation: { equals: specialisation, mode: "insensitive" } } : {}),
+      ...(includeInactive ? {} : { active: true }),
+    },
     include: { user: { select: { name: true } } },
     orderBy: { specialisation: "asc" },
   });
@@ -74,7 +77,8 @@ export async function listDoctors(specialisation?: string) {
       specialisation: doctor.specialisation,
       slotDurationMin: doctor.slotDurationMin,
       workingHours: doctor.workingHours,
-      earliestSlot: (await findEarliestAvailableSlot(doctor))?.start.toISOString() ?? null,
+      active: doctor.active,
+      earliestSlot: doctor.active ? (await findEarliestAvailableSlot(doctor))?.start.toISOString() ?? null : null,
     })),
   );
 }
@@ -94,7 +98,8 @@ export async function getDoctorById(doctorId: string) {
     specialisation: doctor.specialisation,
     slotDurationMin: doctor.slotDurationMin,
     workingHours: doctor.workingHours,
-    earliestSlot: (await findEarliestAvailableSlot(doctor))?.start.toISOString() ?? null,
+    active: doctor.active,
+    earliestSlot: doctor.active ? (await findEarliestAvailableSlot(doctor))?.start.toISOString() ?? null : null,
   };
 }
 
@@ -117,6 +122,9 @@ export async function getDoctorSlots(doctorId: string, date: string) {
   const doctor = await prisma.doctorProfile.findUnique({ where: { id: doctorId } });
   if (!doctor) {
     throw new HttpError("Doctor not found", 404);
+  }
+  if (!doctor.active) {
+    return [];
   }
 
   return listSlotsForDate(doctor, date);

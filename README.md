@@ -232,6 +232,7 @@ POST   /doctor/appointments/:id/notes (DOCTOR)
 
 POST   /admin/doctors                (ADMIN)
 PATCH  /admin/doctors/:id            (ADMIN)
+DELETE /admin/doctors/:id            (ADMIN)
 POST   /admin/doctors/:id/leave      (ADMIN)
 GET    /admin/notifications/failed   (ADMIN)
 

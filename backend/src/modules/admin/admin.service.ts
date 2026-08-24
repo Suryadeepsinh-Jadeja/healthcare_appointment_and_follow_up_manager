@@ -60,12 +60,74 @@ export async function updateDoctor(doctorId: string, input: UpdateDoctorInput) {
         specialisation: input.specialisation,
         slotDurationMin: input.slotDurationMin,
         workingHours: input.workingHours as Prisma.InputJsonValue | undefined,
+        active: input.active,
       },
       include: { user: { select: { id: true, email: true, name: true, phone: true, role: true } } },
     }),
   ]);
 
   return updated;
+}
+
+/**
+ * Doctors are never hard-deleted — their appointment history (prescriptions,
+ * visit notes) has to survive for patients and compliance. "Deleting" a
+ * doctor deactivates them instead: they drop out of patient search/booking,
+ * and any of their still-future HELD/CONFIRMED appointments are cancelled
+ * and patients notified, mirroring the leave-day cancellation flow.
+ */
+export async function deactivateDoctor(doctorId: string) {
+  const doctor = await prisma.doctorProfile.findUnique({ where: { id: doctorId } });
+  if (!doctor) {
+    throw new HttpError("Doctor not found", 404);
+  }
+
+  const { affected } = await prisma.$transaction(async (tx) => {
+    await tx.doctorProfile.update({ where: { id: doctorId }, data: { active: false } });
+
+    const affected = await tx.appointment.findMany({
+      where: { doctorId, slotStart: { gte: new Date() }, status: { in: ["HELD", "CONFIRMED"] } },
+      include: {
+        doctor: { include: { user: true } },
+        patient: { include: { user: true } },
+      },
+    });
+
+    if (affected.length > 0) {
+      await tx.appointment.updateMany({
+        where: { id: { in: affected.map((appointment) => appointment.id) } },
+        data: { status: "CANCELLED", holdExpiresAt: null },
+      });
+    }
+
+    return { affected };
+  });
+
+  for (const appointment of affected) {
+    if (appointment.status !== "CONFIRMED") continue;
+
+    try {
+      await enqueueCancellationNotifications({
+        appointmentId: appointment.id,
+        patientEmail: appointment.patient.user.email,
+        patientName: appointment.patient.user.name,
+        doctorId: appointment.doctorId,
+        doctorEmail: appointment.doctor.user.email,
+        doctorName: appointment.doctor.user.name,
+        specialisation: appointment.doctor.specialisation,
+        slotStart: appointment.slotStart,
+        doctorUserId: appointment.doctor.user.id,
+        patientUserId: appointment.patient.user.id,
+        googleEventIdPatient: appointment.googleEventIdPatient,
+        googleEventIdDoctor: appointment.googleEventIdDoctor,
+        reason: "the doctor is no longer available",
+      });
+    } catch (error) {
+      console.error(`Failed to enqueue cancellation notifications for ${appointment.id}:`, error);
+    }
+  }
+
+  return { cancelledCount: affected.length };
 }
 
 export async function createDoctorLeave(doctorId: string, date: string, reason?: string) {

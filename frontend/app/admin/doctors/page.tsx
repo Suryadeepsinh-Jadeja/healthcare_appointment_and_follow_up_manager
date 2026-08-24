@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { Button, Card, ErrorText, Input, Label } from "../../../components/ui";
+import { Badge, Button, Card, ErrorText, Input, Label } from "../../../components/ui";
 import { WorkingHoursEditor, WorkingHoursState, workingHoursStateToPayload } from "../../../components/WorkingHoursEditor";
 import { Reveal, Stagger, StaggerItem } from "../../../components/motion";
 import { CardSkeleton } from "../../../components/Skeleton";
@@ -75,7 +75,10 @@ export default function AdminDoctorsPage() {
               <StaggerItem key={doctor.id}>
                 <Link href={`/admin/doctors/${doctor.id}`}>
                   <Card hover>
-                    <p className="font-medium">{doctor.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{doctor.name}</p>
+                      {doctor.active === false && <Badge>Inactive</Badge>}
+                    </div>
                     <p className="text-sm text-slate-600">
                       {doctor.specialisation} — {doctor.slotDurationMin} min slots
                     </p>

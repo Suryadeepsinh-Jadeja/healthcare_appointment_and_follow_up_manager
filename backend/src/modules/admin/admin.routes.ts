@@ -30,6 +30,15 @@ adminRouter.patch("/doctors/:id", async (req, res) => {
   }
 });
 
+adminRouter.delete("/doctors/:id", async (req, res) => {
+  try {
+    const result = await adminService.deactivateDoctor(req.params.id);
+    res.status(200).json(result);
+  } catch (error) {
+    handleRouteError(error, res);
+  }
+});
+
 adminRouter.post("/doctors/:id/leave", async (req, res) => {
   try {
     const input = createLeaveSchema.parse(req.body);

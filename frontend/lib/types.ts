@@ -15,6 +15,7 @@ export interface Doctor {
   slotDurationMin: number;
   workingHours?: Record<string, string[]>;
   earliestSlot?: string | null;
+  active?: boolean;
 }
 
 export interface Slot {
